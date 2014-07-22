@@ -6,6 +6,7 @@ package com.jsonparser
 sealed trait JsonValue
 case class JsonNumber(value : Int) extends JsonValue
 case class JsonString(value : String) extends JsonValue
+case object JsonTrue extends JsonValue
 
 case class JsonObject(jsonFields : Map[String, JsonValue]) {
 

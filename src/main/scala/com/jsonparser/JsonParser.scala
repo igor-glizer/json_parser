@@ -8,7 +8,7 @@ object JsonParser {
     if (jsonString.equals("{}")) JsonObject.empty
     else parseFields(jsonString)
 
-  def parseFields(jsonString : String) = {
+  private def parseFields(jsonString : String) = {
     val fields = extractFields(jsonString)
     JsonObject(fields.map(extractKeyValue).toMap)
   }
@@ -24,6 +24,7 @@ object JsonParser {
     value.head match {
       case '"' => JsonString(removeEnclosingSymbols(value))
       case c if c.isDigit || c == '+' || c == '-' => JsonNumber(value.toInt)
+      case _ => JsonTrue
     }
   }
 
