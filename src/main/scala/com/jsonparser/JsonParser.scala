@@ -52,7 +52,7 @@ object JsonParser {
     if (arrayString.isEmpty)
       JsonArray()
     else
-      JsonArray(JsonInt(1))
+      JsonArray(parseValue(arrayString))
   }
 
 
