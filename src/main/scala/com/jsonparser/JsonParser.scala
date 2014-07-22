@@ -21,10 +21,10 @@ object JsonParser {
     (key, value)
   }
 
-  private def parseValue(value : String) = {
+  private def parseValue(value : String) : JsonValue = {
     value.head match {
       case '"' => JsonString(removeEnclosingSymbols(value))
-      case '[' => JsonArray()
+      case '[' => parseArray(value)
       case c if c.isDigit || c == '+' || c == '-' => parseNumber(value)
       case _ => parseLiteral(value)
     }
@@ -34,12 +34,10 @@ object JsonParser {
 
   private def removeEnclosingSymbols(string: String) = string.tail.init
 
-  private def parseLiteral(value: String) = {
-    value match {
-      case "true" => JsonTrue
-      case "false" => JsonFalse
-      case "null" => JsonNull
-    }
+  private def parseLiteral(value: String) = value match {
+    case "true" => JsonTrue
+    case "false" => JsonFalse
+    case "null" => JsonNull
   }
 
   private def parseNumber(value: String) = {
@@ -47,6 +45,14 @@ object JsonParser {
       JsonDouble(value.toDouble)
     else
       JsonInt(value.toInt)
+  }
+
+  private def parseArray(value: String) = {
+    val arrayString = removeEnclosingSymbols(value)
+    if (arrayString.isEmpty)
+      JsonArray()
+    else
+      JsonArray(JsonInt(1))
   }
 
 
