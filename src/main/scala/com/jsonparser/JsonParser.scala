@@ -24,12 +24,19 @@ object JsonParser {
     value.head match {
       case '"' => JsonString(removeEnclosingSymbols(value))
       case c if c.isDigit || c == '+' || c == '-' => JsonNumber(value.toInt)
-      case _ => JsonTrue
+      case _ => parseLiteral(value)
     }
   }
 
   private def extractFields(json: String) = removeEnclosingSymbols(json).split(",")
 
   private def removeEnclosingSymbols(string: String) = string.tail.init
+
+  private def parseLiteral(value: String) = {
+    value match {
+      case "true" => JsonTrue
+      case "false" => JsonFalse
+    }
+  }
 
 }

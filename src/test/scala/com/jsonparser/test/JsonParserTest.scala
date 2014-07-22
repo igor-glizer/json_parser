@@ -36,8 +36,14 @@ class JsonParserTest extends SpecificationWithJUnit {
     }
 
     "parse object with true" in {
-      val tree = JsonParser.parse("{\"a\":true")
+      val tree = JsonParser.parse("{\"a\":true}")
       val content = Map(("a" -> JsonTrue))
+      tree === JsonObject(content)
+    }
+
+    "parse object with false" in {
+      val tree = JsonParser.parse("{\"a\":false}")
+      val content = Map(("a" -> JsonFalse))
       tree === JsonObject(content)
     }
 
