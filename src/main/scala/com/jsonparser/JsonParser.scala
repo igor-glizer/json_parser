@@ -9,17 +9,18 @@ object JsonParser {
     else parseNumberFields(jsonString)
 
   def parseNumberFields(jsonString : String) = {
-    val fields = jsonString.tail.init.split(",")
-    var fieldsSeq = Seq[(String, JsonNumber)]()
-    for (fieldString <- fields)
-    {
-      val keyValueArray = fieldString.split(":")
-      val key = keyValueArray(0).tail.init
-      val value = JsonNumber(keyValueArray(1).toInt)
-      fieldsSeq = fieldsSeq :+ (key, value)
-    }
-
-    JsonObject(fieldsSeq.toMap)
+    val fields = extractFields(jsonString)
+    JsonObject(fields.map(extractKeyValue).toMap)
   }
 
+  def extractKeyValue(fieldString: String): (String, JsonNumber) = {
+    val keyValueArray = fieldString.split(":")
+    val key = removeEnclosingSymbols(keyValueArray(0))
+    val value = JsonNumber(keyValueArray(1).toInt)
+    (key, value)
+  }
+
+  def extractFields(json: String) = removeEnclosingSymbols(json).split(",")
+
+  def removeEnclosingSymbols(string: String) = string.tail.init
 }
