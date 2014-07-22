@@ -5,8 +5,6 @@ package com.jsonparser
  */
 object JsonParser {
 
-  trait Token
-
   def parse(jsonString : String): JsonObject =
     if (jsonString.equals("{}")) JsonObject.empty
     else parseFields(jsonString)
@@ -26,6 +24,7 @@ object JsonParser {
   private def parseValue(value : String) = {
     value.head match {
       case '"' => JsonString(removeEnclosingSymbols(value))
+      case '[' => JsonArray()
       case c if c.isDigit || c == '+' || c == '-' => parseNumber(value)
       case _ => parseLiteral(value)
     }
@@ -49,6 +48,7 @@ object JsonParser {
     else
       JsonInt(value.toInt)
   }
+
 
 
 }
