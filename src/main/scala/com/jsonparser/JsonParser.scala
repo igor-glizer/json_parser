@@ -36,6 +36,7 @@ object JsonParser {
     value match {
       case "true" => JsonTrue
       case "false" => JsonFalse
+      case "null" => JsonNull
     }
   }
 

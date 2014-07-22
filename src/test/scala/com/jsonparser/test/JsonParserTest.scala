@@ -47,6 +47,12 @@ class JsonParserTest extends SpecificationWithJUnit {
       tree === JsonObject(content)
     }
 
+    "parse object with null" in {
+      val tree = JsonParser.parse("{\"a\":null}")
+      val content = Map(("a" -> JsonNull))
+      tree === JsonObject(content)
+    }
+
 
   }
 
