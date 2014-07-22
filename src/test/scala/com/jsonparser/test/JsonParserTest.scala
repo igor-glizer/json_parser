@@ -13,19 +13,23 @@ class JsonParserTest extends SpecificationWithJUnit {
 
 
     "generate empty" in {
-      val jsonParser = JsonParser
-      val tree = jsonParser.parse("{}")
-
+      val tree = JsonParser.parse("{}")
       tree === JsonObject.empty
     }
 
-    "parse object with single number" in {
-      val jsonParser = JsonParser
-      val tree = jsonParser.parse("{\"a\",3}")
-      val content = Map(("a", JsonNumber(3)))
+    "parse object with number" in {
+      val tree = JsonParser.parse("{\"a\":3}")
+      val content = Map(("a" -> JsonNumber(3)))
       tree === JsonObject(content)
-
     }
+
+    "parse object with many numbers" in {
+      val tree = JsonParser.parse("{\"a\":3,\"b\":4}")
+      val content = Map(("a" -> JsonNumber(3)))
+      tree === JsonObject(content)
+    }
+
+
   }
 
 
