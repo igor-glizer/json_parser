@@ -6,21 +6,29 @@ package com.jsonparser
 object JsonParser {
   def parse(jsonString : String): JsonObject =
     if (jsonString.equals("{}")) JsonObject.empty
-    else parseNumberFields(jsonString)
+    else parseFields(jsonString)
 
-  def parseNumberFields(jsonString : String) = {
+  def parseFields(jsonString : String) = {
     val fields = extractFields(jsonString)
     JsonObject(fields.map(extractKeyValue).toMap)
   }
 
-  def extractKeyValue(fieldString: String): (String, JsonNumber) = {
+  private def extractKeyValue(fieldString: String) = {
     val keyValueArray = fieldString.split(":")
     val key = removeEnclosingSymbols(keyValueArray(0))
-    val value = JsonNumber(keyValueArray(1).toInt)
+    val value = parseValue(keyValueArray(1))
     (key, value)
   }
 
-  def extractFields(json: String) = removeEnclosingSymbols(json).split(",")
+  private def parseValue(value : String) = {
+    value.head match {
+      case '"' => JsonString(removeEnclosingSymbols(value))
+      case c if c.isDigit || c == '+' || c == '-' => JsonNumber(value.toInt)
+    }
+  }
 
-  def removeEnclosingSymbols(string: String) = string.tail.init
+  private def extractFields(json: String) = removeEnclosingSymbols(json).split(",")
+
+  private def removeEnclosingSymbols(string: String) = string.tail.init
+
 }

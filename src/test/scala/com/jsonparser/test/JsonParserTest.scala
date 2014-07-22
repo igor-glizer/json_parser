@@ -29,6 +29,12 @@ class JsonParserTest extends SpecificationWithJUnit {
       tree === JsonObject(content)
     }
 
+    "parse object with string" in {
+      val tree = JsonParser.parse("{\"a\":\"a\"}")
+      val content = Map(("a" -> JsonString("a")))
+      tree === JsonObject(content)
+    }
+
 
   }
 
