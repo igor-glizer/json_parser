@@ -4,6 +4,9 @@ package com.jsonparser
  * Created by Igor_Glizer on 7/22/14.
  */
 object JsonParser {
+
+  trait Token
+
   def parse(jsonString : String): JsonObject =
     if (jsonString.equals("{}")) JsonObject.empty
     else parseFields(jsonString)
@@ -23,7 +26,7 @@ object JsonParser {
   private def parseValue(value : String) = {
     value.head match {
       case '"' => JsonString(removeEnclosingSymbols(value))
-      case c if c.isDigit || c == '+' || c == '-' => JsonNumber(value.toInt)
+      case c if c.isDigit || c == '+' || c == '-' => parseNumber(value)
       case _ => parseLiteral(value)
     }
   }
@@ -39,5 +42,13 @@ object JsonParser {
       case "null" => JsonNull
     }
   }
+
+  private def parseNumber(value: String) = {
+    if (value.contains("."))
+      JsonDouble(value.toDouble)
+    else
+      JsonInt(value.toInt)
+  }
+
 
 }

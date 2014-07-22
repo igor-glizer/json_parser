@@ -17,15 +17,15 @@ class JsonParserTest extends SpecificationWithJUnit {
       tree === JsonObject.empty
     }
 
-    "parse object with number" in {
+    "parse object with int" in {
       val tree = JsonParser.parse("{\"a\":3}")
-      val content = Map(("a" -> JsonNumber(3)))
+      val content = Map(("a" -> JsonInt(3)))
       tree === JsonObject(content)
     }
 
-    "parse object with many numbers" in {
+    "parse object with many inta" in {
       val tree = JsonParser.parse("{\"a\":3,\"b\":4}")
-      val content = Map(("a" -> JsonNumber(3)), ("b" -> JsonNumber(4)))
+      val content = Map(("a" -> JsonInt(3)), ("b" -> JsonInt(4)))
       tree === JsonObject(content)
     }
 
@@ -50,6 +50,12 @@ class JsonParserTest extends SpecificationWithJUnit {
     "parse object with null" in {
       val tree = JsonParser.parse("{\"a\":null}")
       val content = Map(("a" -> JsonNull))
+      tree === JsonObject(content)
+    }
+
+    "parse object with double" in {
+      val tree = JsonParser.parse("{\"a\":1.0}")
+      val content = Map(("a" -> JsonDouble(1.0)))
       tree === JsonObject(content)
     }
 
