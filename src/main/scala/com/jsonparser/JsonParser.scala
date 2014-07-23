@@ -10,7 +10,7 @@ object JsonParser {
     else parseFields(jsonString)
 
   private def parseFields(jsonString : String) = {
-    val fields = extractFields(removeObjectBraces(jsonString))
+    val fields = extractElements(removeObjectBraces(jsonString))
     JsonObject(fields.map(extractKeyValue).toMap)
   }
 
@@ -30,26 +30,24 @@ object JsonParser {
     }
   }
 
-  private def extractFields(json: String)  =
+  private def extractElements(jsonPart: String)  =
   {
-    val splittedByComma = json.split(",")
-    var fields = Seq[String]()
-    var arrayBraceOpeners = 0
-    var arrayBraceClosers = 0
-    var lastItem = ""
-    for (currItem <- splittedByComma){
-      arrayBraceOpeners = arrayBraceOpeners + currItem.count(_ == '[')
-      arrayBraceClosers= arrayBraceClosers + currItem.count(_ == ']')
-      lastItem = if (lastItem.nonEmpty) lastItem + "," + currItem else currItem
-      if (arrayBraceOpeners == arrayBraceClosers)
-      {
-        fields = fields :+ lastItem
-        lastItem = ""
-        arrayBraceOpeners = 0
-        arrayBraceClosers = 0
+    val splitPartialElementsByComma = jsonPart.split(",")
+
+    case class ElementsAccumulator(bracesDiff : Int = 0, accumulatedElement : String = "", elements : Seq[String] = Seq()){
+      def accumulate(partialElement : String ) = {
+        val newBracesDiff = this.bracesDiff + (partialElement.count(_ == '[') - partialElement.count(_ == ']'))
+        if (newBracesDiff == 0)
+          completeAccumulationOfElement(partialElement)
+        else
+          continueAccumulationOfElement(partialElement,newBracesDiff)
       }
+      def completeAccumulationOfElement(curValue : String) = ElementsAccumulator(elements = elements :+ (accumulatedElement + curValue))
+      def continueAccumulationOfElement(curValue : String, bracesDiff : Int) = ElementsAccumulator(bracesDiff, accumulatedElement + curValue + ",", elements)
     }
-    fields
+
+    splitPartialElementsByComma.foldLeft(ElementsAccumulator())(
+      (accumulatorForFields, partialElement) => accumulatorForFields.accumulate(partialElement)).elements
   }
 
   private def parseLiteral(value: String) = value match {
@@ -70,7 +68,7 @@ object JsonParser {
     if (arrayString.isEmpty)
       JsonArray()
     else
-      JsonArray((extractFields(arrayString).map(parseValue):_*))
+      JsonArray((extractElements(arrayString).map(parseValue):_*))
   }
 
   private def removeStringQuotes(string: String) = removeEnclosingSymbols(string, '"', '"')
