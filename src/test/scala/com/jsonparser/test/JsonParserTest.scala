@@ -88,6 +88,12 @@ class JsonParserTest extends SpecificationWithJUnit {
       val content = Map("a" -> JsonObject.empty)
       tree === JsonObject(content)
     }
+
+    "parse object with int value inner object" in {
+      val tree = JsonParser.parse("{\"a\":{\"b\":1}}")
+      val content = Map("a" -> JsonObject(Map("b" -> JsonInt(1))))
+      tree === JsonObject(content)
+    }
   }
 
 

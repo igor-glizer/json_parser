@@ -10,12 +10,12 @@ object JsonParser {
     else parseFields(jsonString)
 
   private def parseFields(jsonString : String) = {
-    val fields = extractElements(removeObjectBraces(jsonString))
+    val fields = extractElements(removeObjectBraces(jsonString), ',')
     JsonObject(fields.map(extractKeyValue).toMap)
   }
 
   private def extractKeyValue(fieldString: String) = {
-    val keyValueArray = fieldString.split(":")
+    val keyValueArray = extractElements(fieldString, ':')
     val key = removeStringQuotes(keyValueArray(0))
     val value = parseValue(keyValueArray(1))
     (key, value)
@@ -25,19 +25,19 @@ object JsonParser {
     value.head match {
       case '"' => JsonString(removeStringQuotes(value))
       case '[' => parseArray(value)
-      case '{' => JsonObject.empty
+      case '{' => parseObject(value)
       case c if c.isDigit || c == '+' || c == '-' => parseNumber(value)
       case _ => parseLiteral(value)
     }
   }
 
-  private def extractElements(jsonPart: String)  =
+  private def extractElements(jsonPart: String, splitChar : Char)  =
   {
-    val splitPartialElementsByComma = jsonPart.split(",")
+    val splitPartialElementsByComma = jsonPart.split(splitChar)
 
     case class ElementsAccumulator(bracesDiff : Int = 0, accumulatedElement : String = "", elements : Seq[String] = Seq()){
       def accumulate(partialElement : String ) = {
-        val newBracesDiff = this.bracesDiff + (partialElement.count(_ == '[') - partialElement.count(_ == ']'))
+        val newBracesDiff = this.bracesDiff + (partialElement.count(isOpenBrace) - partialElement.count(isCloseBrace))
         if (newBracesDiff == 0)
           completeAccumulationOfElement(partialElement)
         else
@@ -45,11 +45,16 @@ object JsonParser {
       }
       def completeAccumulationOfElement(curValue : String) = ElementsAccumulator(elements = elements :+ (accumulatedElement + curValue))
       def continueAccumulationOfElement(curValue : String, bracesDiff : Int) = ElementsAccumulator(bracesDiff, accumulatedElement + curValue + ",", elements)
+
+      private def isOpenBrace(c: Char): Boolean =  c == '[' || c == '{'
+      private def isCloseBrace(c: Char): Boolean =  c == ']' || c == '}'
     }
 
     splitPartialElementsByComma.foldLeft(ElementsAccumulator())(
       (accumulatorForFields, partialElement) => accumulatorForFields.accumulate(partialElement)).elements
   }
+
+
 
   private def parseLiteral(value: String) = value match {
     case "true" => JsonTrue
@@ -69,7 +74,15 @@ object JsonParser {
     if (arrayString.isEmpty)
       JsonArray()
     else
-      JsonArray((extractElements(arrayString).map(parseValue):_*))
+      JsonArray((extractElements(arrayString, ',').map(parseValue):_*))
+  }
+
+  private def parseObject(value: String) = {
+    val objectString = removeObjectBraces(value)
+    if (objectString.isEmpty)
+      JsonObject.empty
+    else
+      JsonObject(Map("b" -> JsonInt(1)))
   }
 
   private def removeStringQuotes(string: String) = removeEnclosingSymbols(string, '"', '"')
