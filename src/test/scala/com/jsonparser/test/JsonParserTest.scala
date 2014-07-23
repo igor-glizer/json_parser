@@ -77,6 +77,11 @@ class JsonParserTest extends SpecificationWithJUnit {
       tree === JsonObject(content)
     }
 
+    "parse object with many ints array" in {
+      val tree = JsonParser.parse("{\"a\":[1,2]}")
+      val content = Map("a" -> JsonArray(JsonInt(1), JsonInt(2)))
+      tree === JsonObject(content)
+    }
   }
 
 

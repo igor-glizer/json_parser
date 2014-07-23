@@ -10,29 +10,47 @@ object JsonParser {
     else parseFields(jsonString)
 
   private def parseFields(jsonString : String) = {
-    val fields = extractFields(jsonString)
+    val fields = extractFields(removeObjectBraces(jsonString))
     JsonObject(fields.map(extractKeyValue).toMap)
   }
 
   private def extractKeyValue(fieldString: String) = {
     val keyValueArray = fieldString.split(":")
-    val key = removeEnclosingSymbols(keyValueArray(0))
+    val key = removeStringQuotes(keyValueArray(0))
     val value = parseValue(keyValueArray(1))
     (key, value)
   }
 
   private def parseValue(value : String) : JsonValue = {
     value.head match {
-      case '"' => JsonString(removeEnclosingSymbols(value))
+      case '"' => JsonString(removeStringQuotes(value))
       case '[' => parseArray(value)
       case c if c.isDigit || c == '+' || c == '-' => parseNumber(value)
       case _ => parseLiteral(value)
     }
   }
 
-  private def extractFields(json: String) = removeEnclosingSymbols(json).split(",")
-
-  private def removeEnclosingSymbols(string: String) = string.tail.init
+  private def extractFields(json: String)  =
+  {
+    val splittedByComma = json.split(",")
+    var fields = Seq[String]()
+    var arrayBraceOpeners = 0
+    var arrayBraceClosers = 0
+    var lastItem = ""
+    for (currItem <- splittedByComma){
+      arrayBraceOpeners = arrayBraceOpeners + currItem.count(_ == '[')
+      arrayBraceClosers= arrayBraceClosers + currItem.count(_ == ']')
+      lastItem = if (lastItem.nonEmpty) lastItem + "," + currItem else currItem
+      if (arrayBraceOpeners == arrayBraceClosers)
+      {
+        fields = fields :+ lastItem
+        lastItem = ""
+        arrayBraceOpeners = 0
+        arrayBraceClosers = 0
+      }
+    }
+    fields
+  }
 
   private def parseLiteral(value: String) = value match {
     case "true" => JsonTrue
@@ -48,13 +66,26 @@ object JsonParser {
   }
 
   private def parseArray(value: String) = {
-    val arrayString = removeEnclosingSymbols(value)
+    val arrayString = removeArrayBraces(value)
     if (arrayString.isEmpty)
       JsonArray()
     else
-      JsonArray(parseValue(arrayString))
+      JsonArray((extractFields(arrayString).map(parseValue):_*))
   }
 
+  private def removeStringQuotes(string: String) = removeEnclosingSymbols(string, '"', '"')
 
+  private def removeObjectBraces(string: String) = removeEnclosingSymbols(string, '{', '}')
+
+  private def removeArrayBraces(string: String) = removeEnclosingSymbols(string, '[', ']')
+
+  private def removeEnclosingSymbols(string: String, firstChar : Char, lastChar : Char) = {
+    if (string.head == firstChar && string.last == lastChar)
+      string.tail.init
+    else
+      throw new ParsingException(s"$string should have started with $firstChar and ended with $lastChar")
+  }
+
+  class ParsingException(value : String) extends RuntimeException(value)
 
 }
