@@ -25,6 +25,7 @@ object JsonParser {
     value.head match {
       case '"' => JsonString(removeStringQuotes(value))
       case '[' => parseArray(value)
+      case '{' => JsonObject.empty
       case c if c.isDigit || c == '+' || c == '-' => parseNumber(value)
       case _ => parseLiteral(value)
     }
