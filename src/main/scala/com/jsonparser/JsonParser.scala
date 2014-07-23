@@ -6,10 +6,12 @@ package com.jsonparser
 object JsonParser {
 
   def parse(jsonString : String): JsonObject =
-    if (jsonString.equals("{}")) JsonObject.empty
-    else parseFields(jsonString)
+    if (isJsonEmpty(jsonString)) JsonObject.empty
+    else parseToObject(jsonString)
 
-  private def parseFields(jsonString : String) = {
+  private def isJsonEmpty(jsonString: String) = jsonString.equals("{}")
+
+  private def parseToObject(jsonString : String) = {
     val fields = extractElements(removeObjectBraces(jsonString), ',')
     JsonObject(fields.map(extractKeyValue).toMap)
   }
@@ -25,11 +27,14 @@ object JsonParser {
     value.head match {
       case '"' => JsonString(removeStringQuotes(value))
       case '[' => parseArray(value)
-      case '{' => parseObject(value)
-      case c if c.isDigit || c == '+' || c == '-' => parseNumber(value)
+      case '{' => parse(value)
+      case isNumberBeginning => parseNumber(value)
       case _ => parseLiteral(value)
     }
   }
+
+  def isNumberBeginning(c: Char): Boolean = c.isDigit || c == '+' || c == '-'
+
 
   private def extractElements(jsonPart: String, splitChar : Char)  =
   {
@@ -44,7 +49,7 @@ object JsonParser {
           continueAccumulationOfElement(partialElement,newBracesDiff)
       }
       def completeAccumulationOfElement(curValue : String) = ElementsAccumulator(elements = elements :+ (accumulatedElement + curValue))
-      def continueAccumulationOfElement(curValue : String, bracesDiff : Int) = ElementsAccumulator(bracesDiff, accumulatedElement + curValue + ",", elements)
+      def continueAccumulationOfElement(curValue : String, bracesDiff : Int) = ElementsAccumulator(bracesDiff, accumulatedElement + curValue + splitChar, elements)
 
       private def isOpenBrace(c: Char): Boolean =  c == '[' || c == '{'
       private def isCloseBrace(c: Char): Boolean =  c == ']' || c == '}'
@@ -75,14 +80,6 @@ object JsonParser {
       JsonArray()
     else
       JsonArray((extractElements(arrayString, ',').map(parseValue):_*))
-  }
-
-  private def parseObject(value: String) = {
-    val objectString = removeObjectBraces(value)
-    if (objectString.isEmpty)
-      JsonObject.empty
-    else
-      JsonObject(Map("b" -> JsonInt(1)))
   }
 
   private def removeStringQuotes(string: String) = removeEnclosingSymbols(string, '"', '"')
