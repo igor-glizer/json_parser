@@ -1,7 +1,6 @@
-package com.jsonparser.test
+package com.json
 
 import org.specs2.mutable.SpecificationWithJUnit
-import com.jsonparser._
 
 
 /**

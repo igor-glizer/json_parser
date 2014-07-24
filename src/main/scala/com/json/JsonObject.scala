@@ -1,4 +1,4 @@
-package com.jsonparser
+package com.json
 
 /**
  * Created by Igor_Glizer on 7/22/14.

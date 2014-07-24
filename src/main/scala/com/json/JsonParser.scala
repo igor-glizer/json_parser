@@ -1,4 +1,4 @@
-package com.jsonparser
+package com.json
 
 /**
  * Created by Igor_Glizer on 7/22/14.
@@ -28,7 +28,7 @@ object JsonParser {
       case '"' => JsonString(removeStringQuotes(value))
       case '[' => parseArray(value)
       case '{' => parse(value)
-      case isNumberBeginning => parseNumber(value)
+      case c if isNumberBeginning(c) => parseNumber(value)
       case _ => parseLiteral(value)
     }
   }
